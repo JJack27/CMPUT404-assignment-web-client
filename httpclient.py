@@ -14,6 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Copyright 2019 Yizhou Zhao
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
 # Do not use urllib's HTTP GET and POST mechanisms.
 # Write your own HTTP GET and POST
 # The point is to understand what you have to send and get experience with it
@@ -25,7 +39,7 @@ import re
 import urllib
 
 def help():
-    print "httpclient.py [GET/POST] [URL]\n"
+    print ("httpclient.py [GET/POST] [URL]\n")
 
 class HTTPResponse(object):
     def __init__(self, code=200, body=""):
@@ -83,6 +97,6 @@ if __name__ == "__main__":
         help()
         sys.exit(1)
     elif (len(sys.argv) == 3):
-        print client.command( sys.argv[2], sys.argv[1] )
+        print (client.command(sys.argv[2], sys.argv[1]))
     else:
-        print client.command( sys.argv[1] )   
+        print (client.command(sys.argv[1]))
