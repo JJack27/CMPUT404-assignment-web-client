@@ -38,6 +38,8 @@ import re
 # you may use urllib to encode data appropriately
 import urllib
 
+testing = True
+
 def help():
     print ("httpclient.py [GET/POST] [URL]\n")
 
@@ -49,9 +51,17 @@ class HTTPResponse(object):
 class HTTPClient(object):
     #def get_host_port(self,url):
 
-    def connect(self, host, port):
+    def connect(self, host, port=80):
         # use sockets!
-        return None
+        try:
+            print(host, port)
+            client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_sock.connect((host, port))
+            if testing:
+                print("Connected to:", host,port)
+        except Exception as e:
+            print(e)
+        return client_sock
 
     def get_code(self, data):
         return None
@@ -74,21 +84,94 @@ class HTTPClient(object):
                 done = not part
         return str(buffer)
 
+    # parse the input url, return (host, port, location)
+    def parse_url(self, url):
+        temp = ""
+        port = 80
+        host = ""
+        location = ""
+        if("https://" in url):
+            temp = url.split("https://")[1]
+        elif("http://" in url):
+            temp = url.split("http://")[1]
+        else:
+            temp = url
+        
+        # get host and port number
+        host_and_port = temp.split("/")[0]
+        if(":" in host_and_port):
+            host, port = host_and_port.split(":")
+        else:
+            host = host_and_port
+
+        # get location of file 
+        if(temp.find("/") == -1):
+            location = "/"
+        else:
+            location = temp[temp.find("/"):]
+
+        return (host, int(port), location)
+        
+            
+
     def GET(self, url, args=None):
         code = 500
         body = ""
+        response = ""
+        request = ""
+        client_sock = None 
+
+        # parse url and connect to the server
+        host, port, location = self.parse_url(url)
+        print(host,port,location)
+        client_sock = self.connect(host, port)
+        
+        # build HTTP request
+        #request = "GET {LOCATION} HTTP/1.1\r\nHost: {HOST}:{PORT}\r\n".format(LOCATION=location, HOST=host, PORT=port)
+        request = "GET {LOCATION} HTTP/1.1\r\nHost: {HOST}\r\n".format(LOCATION=location, HOST=host)
+        
+        if (args != None):
+            for key in args:
+                request += "{KEY}: {VALUE}\r\n".format(key, args[key])
+        request += "\r\n"
+        if testing:
+            print("===========")
+            print(request)
+
+        # send HTTP request
+        client_sock.sendall(request.encode())
+        client_sock.shutdown(socket.SHUT_WR)
+        if testing:
+            print("data sent")
+
+        # get response from server
+        response = self.recvall(client_sock)
+        if testing:
+            print(response.decode())
+
+        # parse response
+        header = self.get_headers(response)
+        code = self.get_code(response)
+        body = self.get_body(response)
+        
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
         code = 500
         body = ""
+
+        # connect to the server
+        host, port = url.split(":")
+        client_sock = self.connect(host, int(port))
+
+
         return HTTPResponse(code, body)
 
     def command(self, url, command="GET", args=None):
         if (command == "POST"):
-            return self.POST( url, args )
+            return self.POST(url, args )
         else:
-            return self.GET( url, args )
+            return self.GET(url, args )
     
 if __name__ == "__main__":
     client = HTTPClient()
