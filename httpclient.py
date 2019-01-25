@@ -38,7 +38,7 @@ import re
 # you may use urllib to encode data appropriately
 import urllib
 
-testing = True
+testing = False
 
 def help():
     print ("httpclient.py [GET/POST] [URL]\n")
@@ -64,13 +64,17 @@ class HTTPClient(object):
         return client_sock
 
     def get_code(self, data):
-        return None
+        code = int(data.split(" ")[1])
+        return code
 
     def get_headers(self,data):
-        return None
+        header = data.split('\\r\\n\\r\\n')[0]
+        header = header[12:]
+        return header
 
     def get_body(self, data):
-        return None
+        body = data.split('\\r\\n\\r\\n')[1]
+        return body
 
     # read everything from the socket
     def recvall(self, sock):
@@ -146,14 +150,21 @@ class HTTPClient(object):
 
         # get response from server
         response = self.recvall(client_sock)
-        if testing:
-            print(response.decode())
+        #if testing:
+            #print(response)
 
         # parse response
         header = self.get_headers(response)
-        code = self.get_code(response)
+        code = self.get_code(header)
         body = self.get_body(response)
-        
+        if testing:
+            print("====================")
+            print("code =", code)
+            print("====================")
+            print("header =", header)
+            print("====================")
+            print("body =", body)
+
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
