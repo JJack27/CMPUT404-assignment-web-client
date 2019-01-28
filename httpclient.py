@@ -36,9 +36,9 @@ import sys
 import socket
 import re
 # you may use urllib to encode data appropriately
-import urllib
+import urllib.parse
 
-testing = False
+testing = True
 
 def help():
     print ("httpclient.py [GET/POST] [URL]\n")
@@ -74,7 +74,7 @@ class HTTPClient(object):
 
     def get_body(self, data):
         body = data.split('\\r\\n\\r\\n')[1]
-        return body
+        return body[:]
 
     # read everything from the socket
     def recvall(self, sock):
@@ -139,8 +139,9 @@ class HTTPClient(object):
                 request += "{KEY}: {VALUE}\r\n".format(key, args[key])
         request += "\r\n"
         if testing:
-            print("===========")
+            print("===== request =====")
             print(request)
+            print("===================")
 
         # send HTTP request
         client_sock.sendall(request.encode())
@@ -150,20 +151,25 @@ class HTTPClient(object):
 
         # get response from server
         response = self.recvall(client_sock)
-        #if testing:
-            #print(response)
+        if testing:
+            print("========= Response =========")
+            print(response)
+            print("============================")
 
         # parse response
-        header = self.get_headers(response)
-        code = self.get_code(header)
-        body = self.get_body(response)
-        if testing:
-            print("====================")
-            print("code =", code)
-            print("====================")
-            print("header =", header)
-            print("====================")
-            print("body =", body)
+        try:
+            header = self.get_headers(response)
+            code = self.get_code(header)
+            body = self.get_body(response)
+            if testing:
+                print("====================")
+                print("code =", code)
+                print("====================")
+                print("header =", header)
+                print("====================")
+                print("body =", body)
+        except Exception as e:
+            print(e)
 
         return HTTPResponse(code, body)
 
