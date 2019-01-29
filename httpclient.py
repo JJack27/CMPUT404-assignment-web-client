@@ -139,7 +139,7 @@ class HTTPClient(object):
 
     def GET(self, url, args=None):
         code = 500
-        body = b""
+        body = ""
         response = ""
         request = ""
         client_sock = None 
@@ -150,7 +150,7 @@ class HTTPClient(object):
         client_sock = self.connect(host, port)
         
         # build HTTP request
-        request = "GET {LOCATION} HTTP/1.1\r\nHost: {HOST}\r\nConnection: close\r\n".format(LOCATION=location, HOST=host)
+        request = "GET {LOCATION} HTTP/1.1\r\nHost: {HOST}:{PORT}\r\n".format(LOCATION=location, HOST=host, PORT=port)
         
         if (args != None):
             for key in args:
@@ -162,17 +162,21 @@ class HTTPClient(object):
             print("===================")
 
         # send HTTP request
-        client_sock.sendall(request.encode())
-        client_sock.shutdown(socket.SHUT_WR)
-        if testing:
-            print("data sent")
-        # get response from server
+        '''
         try:
+            
+            if testing:
+                print("data sent")
             response = self.recvall(client_sock)
-        except:
+        except Exception as e:
             code = 404
             body = ""
+            print(e)
+            client_sock.close()
             return HTTPResponse(code, body)
+        '''
+        client_sock.sendall(request.encode())
+        #client_sock.shutdown(socket.SHUT_WR)
 
         if testing:
             print("========= Response =========")
@@ -182,7 +186,7 @@ class HTTPClient(object):
         # parse response
         try:
             header = self.get_headers(response)
-            code = self.get_code(header)
+            code = int(self.get_code(header))
             body = self.get_body(response)#.encode()
             if testing:
                 print("====================")
