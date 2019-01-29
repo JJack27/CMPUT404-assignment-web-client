@@ -154,7 +154,7 @@ class TestHTTPClient(unittest.TestCase):
             print("run_server: Thread died")
 
 
-    """
+    
     def test404GET(self):
         '''Test against 404 errors'''
         MyHTTPHandler.get = nothing_available
@@ -235,7 +235,7 @@ class TestHTTPClient(unittest.TestCase):
                 self.assertTrue(req.body.find(b"DOCTYPE")>=0 or 
                                 req.body.find(b"<body")>=0 , 
                                 "%s Data: [%s] " % (url,req.body))
-    """
+
     def testPOST(self):
         '''Test HTTP POST with an echo server'''
         MyHTTPHandler.post = echo_post

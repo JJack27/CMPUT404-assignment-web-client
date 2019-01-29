@@ -52,7 +52,7 @@ import re
 # you may use urllib to encode data appropriately
 from urllib.parse import urlparse
 
-testing = True
+testing = False
 
 def help():
     print ("httpclient.py [GET/POST] [URL]\n")
@@ -194,7 +194,7 @@ class HTTPClient(object):
             for i in args:
                 request += i + "=" + args[i] + "&"
         request = request[:-1]
-        request += "\r\n\r\n"
+        #request += "\r\n\r\n"
         if testing:
             print("========= Request =========")
             print(request)
@@ -216,7 +216,7 @@ class HTTPClient(object):
         try:
             header = self.get_headers(response)
             code = int(self.get_code(header))
-            body = self.get_body(response).encode("utf-8")
+            body = self.get_body(response)#.encode("utf-8")
             if testing:
                 print("code =", code)
                 print("====================")
