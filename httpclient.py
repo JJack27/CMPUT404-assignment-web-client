@@ -68,12 +68,11 @@ class HTTPClient(object):
         return code
 
     def get_headers(self,data):
-        header = data.split('\\r\\n\\r\\n')[0]
-        header = header[12:]
+        header = data.split('\r\n\r\n')[0]
         return header
 
     def get_body(self, data):
-        body = data.split('\\r\\n\\r\\n')[1]
+        body = data.split('\r\n\r\n')[1]
         return body[:]
 
     # read everything from the socket
@@ -86,37 +85,9 @@ class HTTPClient(object):
                 buffer.extend(part)
             else:
                 done = not part
-        return str(buffer)
-    '''
-    # parse the input url, return (host, port, location)
-    def parse_url1(self, url):
-        temp = ""
-        port = 80
-        host = ""
-        location = ""
-        if("https://" in url):
-            temp = url.split("https://")[1]
-        elif("http://" in url):
-            temp = url.split("http://")[1]
-        else:
-            temp = url
-        
-        # get host and port number
-        host_and_port = temp.split("/")[0]
-        if(":" in host_and_port):
-            print(host_and_port)
-            host, port = host_and_port.split(":")
-        else:
-            host = host_and_port
-
-        # get location of file 
-        if(temp.find("/") == -1):
-            location = "/"
-        else:
-            location = temp[temp.find("/"):]
-
-        return (host, int(port), location)
-    '''
+        return buffer.decode('utf-8')
+    
+    
     def parse_url(self, url):
         host = ""
         port = 80
@@ -134,7 +105,7 @@ class HTTPClient(object):
             path = "/"
         else:
             path = parse_result.path
-        return (host, port, path)
+        return (host, int(port), path)
             
 
     def GET(self, url, args=None):
@@ -146,7 +117,6 @@ class HTTPClient(object):
 
         # parse url and connect to the server
         host, port, location = self.parse_url(url)
-        print(host,port,location)
         client_sock = self.connect(host, port)
         
         # build HTTP request
@@ -176,7 +146,10 @@ class HTTPClient(object):
             return HTTPResponse(code, body)
         '''
         client_sock.sendall(request.encode())
-        #client_sock.shutdown(socket.SHUT_WR)
+        client_sock.shutdown(socket.SHUT_WR)
+        if testing:
+            print("data sent")
+        response = self.recvall(client_sock)
 
         if testing:
             print("========= Response =========")
@@ -187,9 +160,8 @@ class HTTPClient(object):
         try:
             header = self.get_headers(response)
             code = int(self.get_code(header))
-            body = self.get_body(response)#.encode()
+            body = self.get_body(response).encode("utf-8")
             if testing:
-                print("====================")
                 print("code =", code)
                 print("====================")
                 print("header =", header)
