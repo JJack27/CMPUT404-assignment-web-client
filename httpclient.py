@@ -38,7 +38,7 @@ import re
 # you may use urllib to encode data appropriately
 from urllib.parse import urlparse
 
-testing = True
+testing = False
 
 def help():
     print ("httpclient.py [GET/POST] [URL]\n")

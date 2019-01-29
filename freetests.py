@@ -82,7 +82,7 @@ def echo_post(self):
     self.send_response(200)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(post_data))
+    self.wfile.write(json.dumps(post_data).encode())
 
 def header_check(self):
     response = 200
@@ -93,7 +93,7 @@ def header_check(self):
     self.send_response(response)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(errors))
+    self.wfile.write(json.dumps(errors).encode())
 
 def die_on_method(self):
     response = 405
@@ -104,7 +104,7 @@ def die_on_method(self):
     self.send_response(response)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(errors))
+    self.wfile.write(json.dumps(errors).encode())
 
 def post_header_check(self):
     response = 200
@@ -118,7 +118,7 @@ def post_header_check(self):
     self.send_response(response)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(errors))
+    self.wfile.write(json.dumps(errors).encode())
 
 
 
@@ -154,7 +154,7 @@ class TestHTTPClient(unittest.TestCase):
             print("run_server: Thread died")
 
 
-    """
+    
     def test404GET(self):
         '''Test against 404 errors'''
         MyHTTPHandler.get = nothing_available
@@ -162,7 +162,7 @@ class TestHTTPClient(unittest.TestCase):
         req = http.GET("http://%s:%d/49872398432" % (BASEHOST,BASEPORT) )
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 404)
-
+    
     
     def test404POST(self):
         '''Test against 404 errors'''
@@ -171,7 +171,7 @@ class TestHTTPClient(unittest.TestCase):
         req = http.POST("http://%s:%d/49872398432" % (BASEHOST,BASEPORT) )
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 404)
-    """
+    
     def testGET(self):
         '''Test HTTP GET'''
         MyHTTPHandler.get = echo_path_get
@@ -183,7 +183,7 @@ class TestHTTPClient(unittest.TestCase):
         self.assertTrue(req.code == 200)
         print(type(req.body))
         self.assertTrue(req.body.find(path.encode())>=0, "Data: [%s] " % req.body)
-    """
+    
     def testGETHeaders(self):
         '''Test HTTP GET Headers'''
         MyHTTPHandler.get = header_check
@@ -194,7 +194,7 @@ class TestHTTPClient(unittest.TestCase):
         req = http.GET( url )
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 200)
-
+    
     def testPOSTHeaders(self):
         '''Test HTTP POST Headers'''
         MyHTTPHandler.post = post_header_check
@@ -232,8 +232,8 @@ class TestHTTPClient(unittest.TestCase):
                             req.code == 302,
                             "Code: %s for %s" % (req.code, url))
             if (req.code == 200):
-                self.assertTrue(req.body.find("DOCTYPE")>=0 or 
-                                req.body.find("<body")>=0 , 
+                self.assertTrue(req.body.find(b"DOCTYPE")>=0 or 
+                                req.body.find(b"<body")>=0 , 
                                 "%s Data: [%s] " % (url,req.body))
     
     def testPOST(self):
@@ -257,7 +257,7 @@ class TestHTTPClient(unittest.TestCase):
             self.assertTrue(args[key] == outargs[key][0], "Key [%s] not found" % key)
         for key in outargs:
             self.assertTrue(args[key] == outargs[key][0], "Key [%s] not found" % key)
-    """
+    
     @classmethod
     def tearDownClass(self):        
         if (TestHTTPClient.httpd!=None):
