@@ -1,5 +1,19 @@
 #!/usr/bin/env python
 # coding: utf-8
+# Copyright 2019 Yizhou Zhao
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # Copyright 2016 Abram Hindle, https://github.com/tywtyw2002, and https://github.com/treedust
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +52,7 @@ import re
 # you may use urllib to encode data appropriately
 from urllib.parse import urlparse
 
-testing = False
+testing = True
 
 def help():
     print ("httpclient.py [GET/POST] [URL]\n")
@@ -110,7 +124,7 @@ class HTTPClient(object):
 
     def GET(self, url, args=None):
         code = 500
-        body = ""
+        body = bytearray()
         response = ""
         request = ""
         client_sock = None 
@@ -122,9 +136,6 @@ class HTTPClient(object):
         # build HTTP request
         request = "GET {LOCATION} HTTP/1.1\r\nHost: {HOST}:{PORT}\r\n".format(LOCATION=location, HOST=host, PORT=port)
         
-        if (args != None):
-            for key in args:
-                request += "{KEY}: {VALUE}\r\n".format(key, args[key])
         request += "\r\n"
         if testing:
             print("===== request =====")
@@ -132,19 +143,6 @@ class HTTPClient(object):
             print("===================")
 
         # send HTTP request
-        '''
-        try:
-            
-            if testing:
-                print("data sent")
-            response = self.recvall(client_sock)
-        except Exception as e:
-            code = 404
-            body = ""
-            print(e)
-            client_sock.close()
-            return HTTPResponse(code, body)
-        '''
         client_sock.sendall(request.encode())
         client_sock.shutdown(socket.SHUT_WR)
         if testing:
@@ -174,12 +172,62 @@ class HTTPClient(object):
 
     def POST(self, url, args=None):
         code = 500
-        body = bytearray()
+        length = 0
+        body = ""
+        response = ""
+        request = ""
+        client_sock = None 
 
-        # connect to the server
-        
+        # parse url and connect to the server
+        host, port, location = self.parse_url(url)
+        client_sock = self.connect(host, port)
+
+        # Build the request
+        # get the content length
+        if(args != None):
+            for i in args:
+                length += len(i) + 2 + len(args[i])
+        length += 3
+        request = "POST {LOCATION} HTTP/1.1\r\nHost: {HOST}:{PORT}\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length:{LEN}\r\n".format(LOCATION=location, HOST=host, PORT=port, LEN=length)
+        request += "\r\n"
+        if(args != None):
+            for i in args:
+                request += i + "=" + args[i] + "&"
+        request = request[:-1]
+        request += "\r\n\r\n"
+        if testing:
+            print("========= Request =========")
+            print(request)
+            print("===========================")
+
+        # Sending requests
+        client_sock.sendall(request.encode())
+        client_sock.shutdown(socket.SHUT_WR)
+        if testing:
+            print("data sent")
+        response = self.recvall(client_sock)
+
+        if testing:
+            print("========= Response =========")
+            print(response)
+            print("============================")
+
+        # parse response
+        try:
+            header = self.get_headers(response)
+            code = int(self.get_code(header))
+            body = self.get_body(response).encode("utf-8")
+            if testing:
+                print("code =", code)
+                print("====================")
+                print("header =", header)
+                print("====================")
+                print("body =", body)
+        except Exception as e:
+            print(e)
 
 
+        client_sock.close()
         return HTTPResponse(code, body)
 
     def command(self, url, command="GET", args=None):
