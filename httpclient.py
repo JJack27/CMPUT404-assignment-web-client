@@ -158,7 +158,7 @@ class HTTPClient(object):
         try:
             header = self.get_headers(response)
             code = int(self.get_code(header))
-            body = self.get_body(response).encode("utf-8")
+            body = self.get_body(response)
             if testing:
                 print("code =", code)
                 print("====================")
@@ -168,6 +168,9 @@ class HTTPClient(object):
         except Exception as e:
             print(e)
         client_sock.close()
+        print("========= Body of HTTPResponse =========")
+        print(body)
+        print("========================================")
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
@@ -228,7 +231,10 @@ class HTTPClient(object):
 
 
         client_sock.close()
-        return HTTPResponse(code, body.encode())
+        print("========= Body of HTTPResponse =========")
+        print(body)
+        print("========================================")
+        return HTTPResponse(code, body)
 
     def command(self, url, command="GET", args=None):
         if (command == "POST"):

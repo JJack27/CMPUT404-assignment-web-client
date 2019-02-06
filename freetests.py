@@ -180,8 +180,6 @@ class TestHTTPClient(unittest.TestCase):
         req = http.GET( url )
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 200)
-        print("==================")
-        print(type(req.body))
         self.assertTrue(req.body.find(path)>=0, "Data: [%s] " % req.body)
 
     def testGETHeaders(self):
