@@ -216,7 +216,7 @@ class HTTPClient(object):
         try:
             header = self.get_headers(response)
             code = int(self.get_code(header))
-            body = self.get_body(response)#.encode("utf-8")
+            body = self.get_body(response)
             if testing:
                 print("code =", code)
                 print("====================")
@@ -228,7 +228,7 @@ class HTTPClient(object):
 
 
         client_sock.close()
-        return HTTPResponse(code, body)
+        return HTTPResponse(code, body.encode())
 
     def command(self, url, command="GET", args=None):
         if (command == "POST"):
